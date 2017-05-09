@@ -1,0 +1,8 @@
+bin\*
+obj\*
+*.s
+*.ii
+x64\*
+.vs
+Debug\*
+/rbh.VC.db
