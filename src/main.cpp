@@ -14,7 +14,7 @@
 #pragma warning( push, 0 )
 #include <SDL.h>
 #include <SDL_opengl.h>
-#pragma warning( pop ) 
+#pragma warning( pop )
 
 
 #define IM_ARRAYSIZE(_ARR)  ((int)(sizeof(_ARR)/sizeof(*_ARR)))
@@ -210,10 +210,14 @@ bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm)
 			ImGui::EndMenuBar();
 		}
 
-		static bool read_only = false;
+        const static bool codeInputReadOnly = false;
+        auto& currentCodeSampleText = codeSamples[currentSampleIdx];
+        auto* codeText              = currentCodeSampleText.text();
+        const auto codeTextCapacity = currentCodeSampleText.capacity();
 
-		ImGui::InputTextMultiline("##code", (codeSamples[currentSampleIdx]).text(), codeSamples[currentSampleIdx].length(), ImVec2(256, ImGui::GetTextLineHeight() * 16),
-			ImGuiInputTextFlags_AllowTabInput | (read_only ? ImGuiInputTextFlags_ReadOnly : 0));
+		ImGui::InputTextMultiline("##code", codeText, codeTextCapacity, ImVec2(256, ImGui::GetTextLineHeight() * 16),
+                ImGuiInputTextFlags_AllowTabInput | (codeInputReadOnly ? ImGuiInputTextFlags_ReadOnly : 0)
+			);
 		ImGui::SameLine();
 		// TODO: is there some widget in ImGui that does this -- bordered text -- but without presuming text input?
 		ImGui::InputTextMultiline("##romdump", const_cast<char*>(romdump.c_str()), romdump.length(), ImVec2(-1, ImGui::GetTextLineHeight() * 16),

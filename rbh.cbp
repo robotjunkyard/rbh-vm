@@ -82,6 +82,7 @@
 		</Linker>
 		<Unit filename="cb.bmp" />
 		<Unit filename="include/RobotVM.h" />
+		<Unit filename="include/TextBuffer.h" />
 		<Unit filename="include/Typedefs.h">
 			<Option target="&lt;{~None~}&gt;" />
 		</Unit>
@@ -100,6 +101,7 @@
 		<Unit filename="include/stb_textedit.h" />
 		<Unit filename="include/stb_truetype.h" />
 		<Unit filename="src/RobotVM.cpp" />
+		<Unit filename="src/TextBuffer.cpp" />
 		<Unit filename="src/VMAssembler.cpp" />
 		<Unit filename="src/VMInstr.cpp" />
 		<Unit filename="src/VMInstrException.cpp" />
