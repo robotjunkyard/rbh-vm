@@ -3,43 +3,52 @@
 #include <algorithm>
 #include <cstring>
 
-template <unsigned int SIZE = 8192> class TextBuffer
+// this quick-n-dirty class mainly exists because I'm uneasy about directly
+// using char* or std::string.c_str() with ImGui's text input widgets
+class TextBuffer
 {
 private:
+    const int         _capacity;
 	const char* const _name;
 	const char* const _desc;
-	char _text[SIZE];
+	char*             _text;
+
 	void zeroText()
 	{
-		for (int i = 0; i < SIZE; i++)
-			_text[i] = 0;
+        memset(&_text[0], 0, _capacity);
 	}
 
 public:
-	TextBuffer<SIZE>()
-		: _name("Untitled")
+    TextBuffer(TextBuffer&& other)
+        : _capacity(other._capacity), _name(other._name), _desc(other._desc), _text(other._text)
+    {
+
+    }
+
+	explicit TextBuffer(int capacity = 8192)
+		: _capacity(capacity), _name("Untitled"), _desc("")
 	{	zeroText();   }
 
-	TextBuffer<SIZE>(const char* const text, const char* const name = "Untitled", const char* const desc = "")
-		: _name(name), _desc(desc)
+	explicit TextBuffer(const char* const text, const char* const name = "Untitled", const char* const desc = "")
+		: _capacity(strlen(text) + 8192), _name(name), _desc(desc)
 	{
+        _text = new char[_capacity];
 		zeroText();
-		for (int i = 0; i < strlen(text); i++)
-			_text[i] = text[i];
+		this->set(text);
 	}
 
-	TextBuffer<SIZE>(const std::string& text, const char* const name = "Untitled", const char* const desc = "")
-		: _name(name), _desc(desc)
+	explicit TextBuffer(const std::string& text, const char* const name = "Untitled", const char* const desc = "")
+		: _capacity(text.size() + 8192), _name(name), _desc(desc)
 	{
+        _text = new char[_capacity];
 		zeroText();
-		for (int i = 0; i < std::min<unsigned int>(SIZE, text.length()); i++)
-			_text[i] = text.c_str()[i];
+		this->set(text);
 	}
 
-	~TextBuffer<SIZE>() { }
+	~TextBuffer() { if (_text) delete[] _text; }
 
 	int capacity() const {
-		return SIZE;
+		return _capacity;
 	}
 
 	int length() const {
@@ -50,10 +59,26 @@ public:
 		return &_text[0];
 	}
 
+	const char* const name() const { return _name; }
+	const char* const desc() const { return _desc; }
+
 	char& operator[](int index)
 	{
 		// TODO: bounds checking
 		return _text[index];
+	}
+
+	void set(const std::string& text)
+	{
+        int bytes = std::min<unsigned int>(text.length(), this->capacity() - 1);
+        memcpy(this->text(), text.c_str(), bytes);
+        _text[bytes] = '\0';
+	}
+
+	TextBuffer& operator=(const std::string& text)
+	{
+        set(text);
+        return *this;
 	}
 };
 

@@ -1,11 +1,14 @@
 #ifndef VMINSTR_H
 #define VMINSTR_H
 
+#include <string>
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
 #include <list>
 #include <utility>
+
+std::string printHumanOpcodeStrings();
 
 //! Signed word
 typedef std::int16_t  sword_t;

@@ -5,6 +5,7 @@
 #include "imgui_impl_sdl.h"
 #include "RobotVM.h"
 #include "VMAssembler.h"
+#include "VMInstr.h"
 #include "TextBuffer.h"
 
 #include <vector>
@@ -22,17 +23,22 @@
 
 // yeah yeah yeah, I'll move these globals into neat organized classes later on, after this project feels less like a crude prototype
 int resx = 1920, resy = 1080;
-std::vector<TextBuffer<8192>> codeSamples;
+std::vector<TextBuffer*> codeSamples;
 int currentSampleIdx = 1;
 
-bool show_imgui_test_window = true;
+void showAboutWindow(bool* p_open);
+void showOpcodeWindow(bool* p_open);
+
+bool show_imgui_test_window = false;
+bool show_opcode_window     = false;
+bool show_about_window      = false;
 
 void initCodeSamples()
 {
 	// there's no way to get good-looking indentation here, so whatever
-	codeSamples.push_back(
+	codeSamples.emplace_back(
 		// very simple Countdown loop
-		{ std::string{
+		new TextBuffer(std::string{
 				"start: MOV R1,40\n"
 				"loop:  ADD R1,-1\n"
 				"       JNZERO R1,loop\n"
@@ -40,10 +46,10 @@ void initCodeSamples()
 				// "       JNEG R1,derp\n"
 				"       HALT \n" },
 			"Countdown",
-			"A simple countdown loop, with R1 going from 40 down to 0" } );
+			"A simple countdown loop, with R1 going from 40 down to 0") );
 
-	codeSamples.push_back(
-		{ std::string{
+	codeSamples.emplace_back(
+		new TextBuffer(std::string{
 				"start: MOV R4,8\n"          // how many bytes
 				"       MOV R1,2\n"          // initial value to write
 				"       MOV R3,200\n"        // begin write pointer to RAM
@@ -55,8 +61,8 @@ void initCodeSamples()
 				"       JMP loop\n"
 				"end:   DUP R1\n"            // set all registers to same val as R1
 				"       HALT\n" },
-			"WriteLoop"
-			"Writes n*=2 to contiguous memory 'R4' times" } );
+			"WriteLoop",
+			"Writes n*=2 to contiguous memory 'R4' times") );
 }
 
 bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm);
@@ -68,6 +74,8 @@ int WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nShowCmd)
 int main(int argc, char *argv[])
 #endif
 {
+    std::string humanOpcodeStrings = printHumanOpcodeStrings();
+
 	initCodeSamples();
     std::shared_ptr<RobotVM> vmp(new RobotVM());
 
@@ -142,6 +150,18 @@ int main(int argc, char *argv[])
             ImGui::ShowTestWindow(&show_imgui_test_window);
         }
 
+        if (show_opcode_window)
+        {
+            ImGui::SetNextWindowPos(ImVec2(200, 200), ImGuiSetCond_FirstUseEver);
+            showOpcodeWindow(&show_opcode_window);
+        }
+
+        if (show_about_window)
+        {
+            ImGui::SetNextWindowPos(ImVec2(200, 200), ImGuiSetCond_FirstUseEver);
+            showAboutWindow(&show_about_window);
+        }
+
         // Rendering
         //glViewport(0, 0, (int)ImGui::GetIO().DisplaySize.x, (int)ImGui::GetIO().DisplaySize.y);
         glViewport(0, 0, resx, resy);
@@ -187,8 +207,6 @@ bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm)
 		ImGui::Begin("Robots For Hire (VM Dashboard)", &showWindows, desktopWindowFlags);
 		ImGui::Text("Code:");
 
-		// ImGui::Combo("Combo", &currentSampleIdx,
-
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -200,20 +218,24 @@ bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm)
 				ImGui::EndMenu();
 			}
 
-			/*if (ImGui::BeginMenu("Edit"))
+			if (ImGui::BeginMenu("Help"))
 			{
-				ImGui::MenuItem("Test 1", NULL);
-				ImGui::MenuItem("Test 2", NULL, &testToggleValue);
-				ImGui::EndMenu();
-			}*/
+                if (ImGui::MenuItem("Opcode Chart")) { show_opcode_window = !show_opcode_window; }
+                if (ImGui::MenuItem("Show imgui demo")) { show_imgui_test_window = !show_imgui_test_window; }
+                ImGui::Separator();
+                if (ImGui::MenuItem("About rbh-vm")) { show_about_window  = !show_about_window;  }
+
+                ImGui::EndMenu();
+			}
+
 
 			ImGui::EndMenuBar();
 		}
 
         const static bool codeInputReadOnly = false;
         auto& currentCodeSampleText = codeSamples[currentSampleIdx];
-        auto* codeText              = currentCodeSampleText.text();
-        const auto codeTextCapacity = currentCodeSampleText.capacity();
+        auto* codeText              = currentCodeSampleText->text();
+        const auto codeTextCapacity = currentCodeSampleText->capacity();
 
 		ImGui::InputTextMultiline("##code", codeText, codeTextCapacity, ImVec2(256, ImGui::GetTextLineHeight() * 16),
                 ImGuiInputTextFlags_AllowTabInput | (codeInputReadOnly ? ImGuiInputTextFlags_ReadOnly : 0)
@@ -228,7 +250,7 @@ bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm)
 			vm->reset();
 			asmblr->reset();
 
-			asmblr->parsetextblock(codeSamples[currentSampleIdx].text());
+			asmblr->parsetextblock(codeSamples[currentSampleIdx]->text());
 			asmblr->walkFirstPass();
 			asmblr->walkSecondPass();
 			romdump = vm->printROMToString();
@@ -327,3 +349,48 @@ bool renderGUI(SDL_Window* window, VMAssembler *asmblr, RobotVM *vm)
 	return done;
 }
 
+
+void showOpcodeWindow(bool* p_open)
+{
+    static std::string opcodes = printHumanOpcodeStrings();
+    ImGui::SetNextWindowSize(ImVec2(200,300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(resx-200, 0), ImGuiCond_FirstUseEver);
+    if (!ImGui::Begin("Opcode Chart", p_open, 0 /*window_flags*/))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return;
+    }
+
+    ImGui::Text("%s", opcodes.c_str());
+    ImGui::AlignFirstTextHeightToWidgets();
+
+    ImGui::End();
+}
+
+void showAboutWindow(bool* p_open)
+{
+    ImGui::SetNextWindowSize(ImVec2(200,300), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPosCenter(ImGuiCond_Always);
+    if (!ImGui::Begin("About", p_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_Modal))
+    {
+        // Early out if the window is collapsed, as an optimization.
+        ImGui::End();
+        return;
+    }
+
+    ImGui::Text("rbh-vm");
+    ImGui::Text("By Nick Baker\nhttps://github.com/robotjunkyard/rbh-vm\n");
+    ImGui::Text("Under MIT License.");
+    ImGui::Separator();
+    ImGui::Text("A set of classes for a bytecode virtual machine.  This is still\n");
+    ImGui::Text("in an immature development stage and bound to have bugs, so please\n");
+    ImGui::Text("do not use this for anything serious/critical/'production' yet.");
+    ImGui::Separator();
+    ImGui::Text("Dashboard/GUI code uses IMGUI library by Omar Cornut:");
+    ImGui::Text("https://github.com/ocornut/imgui");
+
+    ImGui::AlignFirstTextHeightToWidgets();
+
+    ImGui::End();
+}

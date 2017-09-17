@@ -12,8 +12,8 @@
 // Thank you,
 // -Your beloved friend, imgui_demo.cpp (that you won't delete)
 
-// Message to beginner C/C++ programmer about the meaning of 'static': in this demo code, we frequently we use 'static' variables inside functions. 
-// We do this as a way to gather code and data in the same place, make the demo code faster to read, faster to write, and smaller. A static variable persist across calls, 
+// Message to beginner C/C++ programmer about the meaning of 'static': in this demo code, we frequently we use 'static' variables inside functions.
+// We do this as a way to gather code and data in the same place, make the demo code faster to read, faster to write, and smaller. A static variable persist across calls,
 // so it is essentially like a global variable but declared inside the scope of the function.
 // It also happens to be a convenient way of storing simple UI related information as long as your function doesn't need to be reentrant or used in threads.
 // This may be a pattern you want to use in your code (simple is beautiful!), but most of the real data you would be editing is likely to be stored outside your function.
@@ -264,7 +264,7 @@ void ImGui::ShowTestWindow(bool* p_open)
         if (ImGui::TreeNode("Basic"))
         {
             static int clicked = 0;
-            if (ImGui::Button("Button")) 
+            if (ImGui::Button("Button"))
                 clicked++;
             if (clicked & 1)
             {
@@ -392,7 +392,7 @@ void ImGui::ShowTestWindow(bool* p_open)
                     if (ImGui::TreeNode((void*)(intptr_t)i, "Child %d", i))
                     {
                         ImGui::Text("blah blah");
-                        ImGui::SameLine(); 
+                        ImGui::SameLine();
                         if (ImGui::SmallButton("print")) printf("Child %d pressed", i);
                         ImGui::TreePop();
                     }
@@ -419,7 +419,7 @@ void ImGui::ShowTestWindow(bool* p_open)
                     {
                         // Node
                         bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, "Selectable Node %d", i);
-                        if (ImGui::IsItemClicked()) 
+                        if (ImGui::IsItemClicked())
                             node_clicked = i;
                         if (node_open)
                         {
@@ -431,7 +431,7 @@ void ImGui::ShowTestWindow(bool* p_open)
                     {
                         // Leaf: The only reason we have a TreeNode at all is to allow selection of the leaf. Otherwise we can use BulletText() or TreeAdvanceToLabelPos()+Text().
                         ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen, "Selectable Leaf %d", i);
-                        if (ImGui::IsItemClicked()) 
+                        if (ImGui::IsItemClicked())
                             node_clicked = i;
                     }
                 }
@@ -1261,7 +1261,7 @@ void ImGui::ShowTestWindow(bool* p_open)
             ImGui::BeginChild("scrolling", ImVec2(0, ImGui::GetItemsLineHeightWithSpacing()*7 + 30), true, ImGuiWindowFlags_HorizontalScrollbar);
             for (int line = 0; line < lines; line++)
             {
-                // Display random stuff (for the sake of this trivial demo we are using basic Button+SameLine. If you want to create your own time line for a real application you may be better off 
+                // Display random stuff (for the sake of this trivial demo we are using basic Button+SameLine. If you want to create your own time line for a real application you may be better off
                 // manipulating the cursor position yourself, aka using SetCursorPos/SetCursorScreenPos to position the widgets yourself. You may also want to use the lower-level ImDrawList API)
                 int num_buttons = 10 + ((line & 1) ? line * 9 : line * 3);
                 for (int n = 0; n < num_buttons; n++)
@@ -1283,9 +1283,9 @@ void ImGui::ShowTestWindow(bool* p_open)
             ImGui::EndChild();
             ImGui::PopStyleVar(2);
             float scroll_x_delta = 0.0f;
-            ImGui::SmallButton("<<"); if (ImGui::IsItemActive()) scroll_x_delta = -ImGui::GetIO().DeltaTime * 1000.0f; ImGui::SameLine(); 
+            ImGui::SmallButton("<<"); if (ImGui::IsItemActive()) scroll_x_delta = -ImGui::GetIO().DeltaTime * 1000.0f; ImGui::SameLine();
             ImGui::Text("Scroll from code"); ImGui::SameLine();
-            ImGui::SmallButton(">>"); if (ImGui::IsItemActive()) scroll_x_delta = +ImGui::GetIO().DeltaTime * 1000.0f; ImGui::SameLine(); 
+            ImGui::SmallButton(">>"); if (ImGui::IsItemActive()) scroll_x_delta = +ImGui::GetIO().DeltaTime * 1000.0f; ImGui::SameLine();
             ImGui::Text("%.0f/%.0f", scroll_x, scroll_max_x);
             if (scroll_x_delta != 0.0f)
             {
@@ -1866,8 +1866,8 @@ void ImGui::ShowStyleEditor(ImGuiStyle* ref)
         filter.Draw("Filter colors", 200);
 
         static ImGuiColorEditFlags alpha_flags = 0;
-        ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine(); 
-        ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine(); 
+        ImGui::RadioButton("Opaque", &alpha_flags, 0); ImGui::SameLine();
+        ImGui::RadioButton("Alpha", &alpha_flags, ImGuiColorEditFlags_AlphaPreview); ImGui::SameLine();
         ImGui::RadioButton("Both", &alpha_flags, ImGuiColorEditFlags_AlphaPreviewHalf);
 
         ImGui::BeginChild("#colors", ImVec2(0, 300), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
@@ -2095,7 +2095,7 @@ static void ShowExampleAppConstrainedResize(bool* p_open)
 
     if (ImGui::Begin("Example: Constrained Resize", p_open))
     {
-        const char* desc[] = 
+        const char* desc[] =
         {
             "Resize vertical only",
             "Resize horizontal only",
@@ -2104,11 +2104,11 @@ static void ShowExampleAppConstrainedResize(bool* p_open)
             "Custom: Always Square",
             "Custom: Fixed Steps (100)",
         };
-        ImGui::Combo("Constraint", &type, desc, IM_ARRAYSIZE(desc)); 
+        ImGui::Combo("Constraint", &type, desc, IM_ARRAYSIZE(desc));
         if (ImGui::Button("200x200")) { ImGui::SetWindowSize(ImVec2(200,200)); } ImGui::SameLine();
         if (ImGui::Button("500x500")) { ImGui::SetWindowSize(ImVec2(500,500)); } ImGui::SameLine();
         if (ImGui::Button("800x200")) { ImGui::SetWindowSize(ImVec2(800,200)); }
-        for (int i = 0; i < 10; i++) 
+        for (int i = 0; i < 10; i++)
             ImGui::Text("Hello, sailor! Making this line long enough for the example.");
     }
     ImGui::End();
@@ -2158,7 +2158,7 @@ static void ShowExampleAppManipulatingWindowTitle(bool*)
     ImGui::End();
 }
 
-// Demonstrate using the low-level ImDrawList to draw custom shapes. 
+// Demonstrate using the low-level ImDrawList to draw custom shapes.
 static void ShowExampleAppCustomRendering(bool* p_open)
 {
     ImGui::SetNextWindowSize(ImVec2(350,560), ImGuiCond_FirstUseEver);

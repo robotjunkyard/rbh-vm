@@ -1,3 +1,4 @@
+#include <vector>
 #include <algorithm>
 #include <cstdio>
 #include <cctype>
@@ -6,6 +7,7 @@
 #include "VMOpcodeTypes.h"
 #include "VMEmitException.h"
 #include "VMXCoderException.h"
+#include "TextBuffer.h"
 
 //! String representations of the HumanOpcodes
 std::vector<std::string> humanopcodestrings = {
@@ -42,6 +44,16 @@ std::vector<std::string> humanopcodestrings = {
     "RECV",
     "SEND"
 };
+
+std::string printHumanOpcodeStrings()
+{
+    std::string str = "";
+
+    for (const auto& hopcStr : humanopcodestrings)
+        str += hopcStr + '\n';
+
+    return str;
+}
 
 const std::vector<std::string> registerStrings = {
     "R1", "R2", "R3", "R4", "PC", "SP", "IX"
